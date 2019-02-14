@@ -22,7 +22,7 @@ def crawl_web(seed_page):
 	next_depth = []
 	index = {}
 	num = 0
-	while to_crawl and num <= 1:
+	while to_crawl and num <= 3:
 		while to_crawl:
 			page = to_crawl.pop()
 			if(page[0:4] == 'http'):
@@ -84,7 +84,10 @@ def lookup(index, keyword):
         return index[keyword]
     else:
         return None
-        
+
+def open_browser(url):
+	webbrowser.open(url)
+
 def main():
 	crawled, index = crawl_web('https://xkcd.com/')
 	for key in index:
@@ -92,8 +95,11 @@ def main():
 	k = raw_input("Enter the keyword you are searching for : ")
 	urls = lookup(index, k)
 	if urls:
-		for url in urls:
-			print(url)
+		url = urls[0]
+		open_browser(url)
+	
+	else:
+		print("No website found!!")
 
 if __name__ == '__main__':
     main()
