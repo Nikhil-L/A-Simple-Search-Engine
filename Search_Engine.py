@@ -1,4 +1,5 @@
 
+
 from textblob import TextBlob, Word, Blobber
 import webbrowser
 import requests
@@ -8,7 +9,7 @@ from bs4 import BeautifulSoup
 def get_page(url):
 	
 	response = requests.get(url)
-	page = str(BeautifulSoup(response.content, 'lxml'))
+	page = response.text
 	return page
 
 def clean(content):
@@ -16,48 +17,38 @@ def clean(content):
 	return content.words
 	
 def crawl_web(seed_page):
-	
+
 	to_crawl = [seed_page]
 	crawled = []
 	next_depth = []
 	index = {}
 	num = 0
 	while to_crawl and num <= 3:
-		while to_crawl:
-			page = to_crawl.pop()
-			if(page[0:4] == 'http'):
-				num = num + 1
-				break
+		page = to_crawl.pop()
+		num = num + 1
+		if(len(to_crawl) > 500):
+			break
 		if page not in crawled:
 			content = get_page(page)
 			soup = BeautifulSoup(content, 'lxml')
 			txt = soup.get_text()
 			add_page_to_index(index, page, txt)
-			links = get_all_links(content)
+			links = get_all_links(soup)
 			union(to_crawl, links)
 			crawled.append(page)
 	return crawled, index
 	
-def get_next_link(page):
-
-	start_link = page.find('<a href=')
-	if start_link == -1:
-		return None, 0
-	start_quote = page.find('"', start_link)
-	end_quote = page.find('"', start_quote + 1)
-	url = page[start_quote + 1: end_quote]
-	return url, end_quote
 	
 def get_all_links(page):
 	
 	links = []
-	while True:
-		url, end_pos = get_next_link(page)
+	tags = page.find_all('a')
+
+	for tag in tags:
+		url = tag.get('href')
 		if url:
-			links.append(url)
-			page = page[end_pos:]
-		else:
-			break
+			if url[0:4] == "http":
+				links.append(url)
 	return links
 	
 def union(links, page):
@@ -90,12 +81,12 @@ def open_browser(url):
 
 def main():
 	crawled, index = crawl_web('https://xkcd.com/')
-	for key in index:
-		print(key)
+	#for key in index:
+		#print(key)
 	k = raw_input("Enter the keyword you are searching for : ")
 	urls = lookup(index, k)
 	if urls:
-		url = urls[0]
+		url = urls[len(urls)/2]
 		open_browser(url)
 	
 	else:
