@@ -4,6 +4,8 @@ from textblob import TextBlob, Word, Blobber
 import webbrowser
 import requests
 from bs4 import BeautifulSoup
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 
 def get_page(url):
@@ -14,7 +16,13 @@ def get_page(url):
 
 def clean(content):
 	content = TextBlob(content)
-	return content.words
+	ps = PorterStemmer()
+	i = 0
+	contents = content.words
+	for word in contents:
+		contents[i] = ps.stem(word)
+		i = i + 1
+	return contents
 	
 def crawl_web(seed_page):
 
@@ -26,7 +34,7 @@ def crawl_web(seed_page):
 	while to_crawl and num <= 3:
 		page = to_crawl.pop()
 		num = num + 1
-		if(len(to_crawl) > 500):
+		if(len(to_crawl) > 100):
 			break
 		if page not in crawled:
 			content = get_page(page)
@@ -83,7 +91,9 @@ def main():
 	crawled, index = crawl_web('https://xkcd.com/')
 	#for key in index:
 		#print(key)
+	ps = PorterStemmer()
 	k = raw_input("Enter the keyword you are searching for : ")
+	k = ps.stem(k)
 	urls = lookup(index, k)
 	if urls:
 		url = urls[len(urls)/2]
