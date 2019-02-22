@@ -4,7 +4,8 @@ from textblob import TextBlob, Word, Blobber
 import webbrowser
 import requests
 from bs4 import BeautifulSoup
-from nltk.stem import PorterStemmer
+from nltk.stem.snowball import SnowballStemmer
+from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 
@@ -15,14 +16,20 @@ def get_page(url):
 	return page
 
 def clean(content):
+	#content = word_tokenize(content)
 	content = TextBlob(content)
-	ps = PorterStemmer()
+	content = content.words
+	stop_words = set(stopwords.words('english'))
+	stop_words.add("this")
+	stemmer = SnowballStemmer("english")
 	i = 0
-	contents = content.words
-	for word in contents:
-		contents[i] = ps.stem(word)
-		i = i + 1
-	return contents
+	for word in content:
+		if(word not in stop_words):
+			content[i] = stemmer.stem(word.lower())
+			i = i + 1
+		else:
+			del content[i]
+	return content
 	
 def crawl_web(seed_page):
 
@@ -31,10 +38,10 @@ def crawl_web(seed_page):
 	next_depth = []
 	index = {}
 	num = 0
-	while to_crawl and num <= 3:
+	while to_crawl and num <= 2:
 		page = to_crawl.pop()
 		num = num + 1
-		if(len(to_crawl) > 100):
+		if(len(to_crawl) > 50):
 			break
 		if page not in crawled:
 			content = get_page(page)
@@ -89,11 +96,11 @@ def open_browser(url):
 
 def main():
 	crawled, index = crawl_web('https://xkcd.com/')
-	#for key in index:
-		#print(key)
-	ps = PorterStemmer()
+	for key in index:
+		print(key)
+	stemmer = SnowballStemmer("english")
 	k = raw_input("Enter the keyword you are searching for : ")
-	k = ps.stem(k)
+	k = stemmer.stem(k)
 	urls = lookup(index, k)
 	if urls:
 		url = urls[len(urls)/2]
