@@ -94,12 +94,18 @@ def lookup(index, keyword):
 def open_browser(url):
 	webbrowser.open(url)
 
+def look(index, key):
+	for keyword in index:
+		if key == keyword[0:2]:
+			print (keyword)
+			return index[keyword]
+
 def main():
 	crawled, index = crawl_web('https://xkcd.com/')
 	for key in index:
 		print(key)
 	stemmer = SnowballStemmer("english")
-	k = raw_input("Enter the keyword you are searching for : ")
+	k = str(raw_input("Enter the keyword you are searching for : "))
 	k = stemmer.stem(k)
 	urls = lookup(index, k)
 	if urls:
@@ -107,7 +113,11 @@ def main():
 		open_browser(url)
 	
 	else:
-		print("No website found!!")
+		key = str(k[0:2])
+		print(key)
+		url = look(index,key)
+		print url
+		open_browser(url[0])
 
 if __name__ == '__main__':
     main()
