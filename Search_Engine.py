@@ -96,8 +96,7 @@ def open_browser(url):
 
 def look(index, key):
 	for keyword in index:
-		if key == keyword[0:2]:
-			print (keyword)
+		if key == keyword[0:1]:
 			return index[keyword]
 
 def main():
@@ -108,16 +107,17 @@ def main():
 	k = str(raw_input("Enter the keyword you are searching for : "))
 	k = stemmer.stem(k)
 	urls = lookup(index, k)
+	urls = set(urls)
 	if urls:
-		url = urls[len(urls)/2]
+		url = urls.pop()
 		open_browser(url)
 	
 	else:
-		key = str(k[0:2])
+		key = str(k[0:1])
 		print(key)
 		url = look(index,key)
-		print url
-		open_browser(url[0])
+		url = set(url)
+		open_browser(url.pop())
 
 if __name__ == '__main__':
     main()
