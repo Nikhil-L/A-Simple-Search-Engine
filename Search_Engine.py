@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
+from Tkinter import *
 
 
 def get_page(url):
@@ -99,25 +100,42 @@ def look(index, key):
 		if key == keyword[0:1]:
 			return index[keyword]
 
-def main():
+def search():
+	print("reached search")
 	crawled, index = crawl_web('https://xkcd.com/')
 	for key in index:
 		print(key)
 	stemmer = SnowballStemmer("english")
-	k = str(raw_input("Enter the keyword you are searching for : "))
-	k = stemmer.stem(k)
-	urls = lookup(index, k)
+	key = stemmer.stem(key)
+	urls = lookup(index, key)
 	urls = set(urls)
-	if urls:
-		url = urls.pop()
+	if(urls):
+		url = urls.pop();
 		open_browser(url)
-	
 	else:
-		key = str(k[0:1])
+		key = str(key[0:1])
 		print(key)
 		url = look(index,key)
 		url = set(url)
 		open_browser(url.pop())
+
+entry = 0
+
+def open_tkinter():
+	my_window = Tk()
+	label1 = Label(my_window, text = "Enter key word")
+	global entry
+	entry = Entry(my_window)
+	button1 = Button(my_window, text = "click here to continue",command=search)
+
+	label1.grid(row = 0, column = 0)
+	entry.grid(row = 0, column = 1)
+	button1.grid(row = 1)
+
+	my_window.mainloop()
+
+def main():
+	open_tkinter()
 
 if __name__ == '__main__':
     main()
