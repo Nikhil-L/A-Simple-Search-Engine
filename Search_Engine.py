@@ -35,10 +35,10 @@ def crawl_web(seed_page):
 	next_depth = []
 	index = {}
 	num = 0
-	while to_crawl and num <= 3:
+	while to_crawl and num <= 7:
 		page = to_crawl.pop()
 		num = num + 1
-		if(len(to_crawl) > 150):
+		if(len(crawled) > 250):
 			break
 		if page not in crawled:
 			content = get_page(page)
@@ -77,9 +77,11 @@ def add_page_to_index(index, url, content):
         
 def add_to_index(index, keyword, url):
     if keyword in index:
-        index[keyword].append(url)
+    	if url not in index[keyword]:
+        	index[keyword].append(url)
     else:
-        index[keyword] = [url]
+    	index[keyword] = []
+    	index[keyword].append(url)
 
 def lookup(index, keyword):
     if keyword in index:
@@ -97,7 +99,7 @@ def look(index, key):
 
 def search():
 	print("reached search")
-	crawled, index = crawl_web('https://xkcd.com/')
+	crawled, index = crawl_web('https://www.geeksforgeeks.org/')
 	#for key in index:
 		#print(key)
 	stemmer = SnowballStemmer("english")
@@ -105,15 +107,20 @@ def search():
 	key = key.lower()
 	key = stemmer.stem(key)
 	urls = lookup(index, key)
+	'''if(urls):
+		for url in urls:
+			print(url)'''
 	if(urls):
-		urls = set(urls)
-		url = urls.pop();
+		url = urls[-1]
 		open_browser(url)
 	else:
 		key = str(key[0:1])
-		url = look(index,key)
-		url = set(url)
-		open_browser(url.pop())
+		urls = look(index,key)
+		'''if(urls):
+			for url in urls:
+				print(url)'''
+		url = urls[-1]
+		open_browser(url)
 
 entry = 0
 
