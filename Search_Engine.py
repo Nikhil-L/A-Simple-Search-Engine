@@ -1,14 +1,11 @@
 
-
-from textblob import TextBlob, Word, Blobber
 import webbrowser
 import requests
 from bs4 import BeautifulSoup
 from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
-from Tkinter import *
-
+from tkinter import*
 
 def get_page(url):
 	
@@ -17,16 +14,15 @@ def get_page(url):
 	return page
 
 def clean(content):
-	#content = word_tokenize(content)
-	content = TextBlob(content)
-	content = content.words
+	content = word_tokenize(content)
+	content = [word.lower() for word in content if word.isalpha()]
 	stop_words = set(stopwords.words('english'))
 	stop_words.add("this")
 	stemmer = SnowballStemmer("english")
 	i = 0
 	for word in content:
 		if(word not in stop_words):
-			content[i] = stemmer.stem(word.lower())
+			content[i] = stemmer.stem(word)
 			i = i + 1
 		else:
 			del content[i]
@@ -39,10 +35,10 @@ def crawl_web(seed_page):
 	next_depth = []
 	index = {}
 	num = 0
-	while to_crawl and num <= 2:
+	while to_crawl and num <= 3:
 		page = to_crawl.pop()
 		num = num + 1
-		if(len(to_crawl) > 50):
+		if(len(to_crawl) > 150):
 			break
 		if page not in crawled:
 			content = get_page(page)
@@ -77,8 +73,7 @@ def add_page_to_index(index, url, content):
 	
 	content = clean(content)
 	for word in content:
-		if len(word) > 5 and len(word) < 15:
-			add_to_index(index, word, url)
+		add_to_index(index, word, url)
         
 def add_to_index(index, keyword, url):
     if keyword in index:
@@ -103,18 +98,19 @@ def look(index, key):
 def search():
 	print("reached search")
 	crawled, index = crawl_web('https://xkcd.com/')
-	for key in index:
-		print(key)
+	#for key in index:
+		#print(key)
 	stemmer = SnowballStemmer("english")
+	key = entry.get()
+	key = key.lower()
 	key = stemmer.stem(key)
 	urls = lookup(index, key)
-	urls = set(urls)
 	if(urls):
+		urls = set(urls)
 		url = urls.pop();
 		open_browser(url)
 	else:
 		key = str(key[0:1])
-		print(key)
 		url = look(index,key)
 		url = set(url)
 		open_browser(url.pop())
@@ -139,3 +135,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
