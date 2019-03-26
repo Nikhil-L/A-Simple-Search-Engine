@@ -1,4 +1,5 @@
 
+#import section
 import webbrowser
 import requests
 from bs4 import BeautifulSoup
@@ -7,24 +8,32 @@ from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from tkinter import*
 
+
 def get_page(url):
 	
+	#get the page
 	response = requests.get(url)
+	#convert the page into text format
 	page = response.text
 	return page
 
 def clean(content):
+	#tokenize the text into list of words
 	content = word_tokenize(content)
+	#remove punctuations and convert to lowercase
 	content = [word.lower() for word in content if word.isalpha()]
 	stop_words = set(stopwords.words('english'))
 	stop_words.add("this")
+	#usage of SnowballStemmer to apply stemming for words in list
 	stemmer = SnowballStemmer("english")
 	i = 0
 	for word in content:
 		if(word not in stop_words):
+			#stemming the words
 			content[i] = stemmer.stem(word)
 			i = i + 1
 		else:
+			# word is a stop words then delete that word
 			del content[i]
 	return content
 	
@@ -35,16 +44,20 @@ def crawl_web(seed_page):
 	next_depth = []
 	index = {}
 	num = 0
-	while to_crawl and num <= 7:
+	while to_crawl and num <= 7:#make the loop crawl for the length of 7 pages
 		page = to_crawl.pop()
 		num = num + 1
-		if(len(crawled) > 250):
-			break
+		
 		if page not in crawled:
+			#get the page
 			content = get_page(page)
+			#convert the page into parsable format
 			soup = BeautifulSoup(content, 'lxml')
+			#get text from the soup
 			txt = soup.get_text()
+			#adds the all the keywords in the page to the index
 			add_page_to_index(index, page, txt)
+			#scraps all the links for further crawling
 			links = get_all_links(soup)
 			union(to_crawl, links)
 			crawled.append(page)
@@ -54,6 +67,7 @@ def crawl_web(seed_page):
 def get_all_links(page):
 	
 	links = []
+	#get all links having a herf
 	tags = page.find_all('a')
 
 	for tag in tags:
@@ -64,18 +78,19 @@ def get_all_links(page):
 	return links
 	
 def union(links, page):
-
+	#append the unique link to to_be_crawled list
 	for link in page:
 		if link not in links:
 			links.append(link)
 			
 def add_page_to_index(index, url, content):
-	
+	#converting the text to a list of words 
 	content = clean(content)
 	for word in content:
 		add_to_index(index, word, url)
         
 def add_to_index(index, keyword, url):
+	#unique keyword or url gets appended to index
     if keyword in index:
     	if url not in index[keyword]:
         	index[keyword].append(url)
@@ -90,7 +105,7 @@ def lookup(index, keyword):
         return None
 
 def open_browser(url):
-	webbrowser.open(url)
+	webbrowser.open(url)#opens the url in the webbrowser
 
 def look(index, key):
 	for keyword in index:
@@ -99,22 +114,28 @@ def look(index, key):
 
 def search():
 	print("reached search")
+	#start crawling form the seed page
 	crawled, index = crawl_web('https://www.geeksforgeeks.org/')
 	#for key in index:
 		#print(key)
+	#apply stemmer for keyword
 	stemmer = SnowballStemmer("english")
 	key = entry.get()
-	key = key.lower()
+	key = key.lower()#convert it to lower
 	key = stemmer.stem(key)
+	#search for keyword in the dictionary
 	urls = lookup(index, key)
 	'''if(urls):
 		for url in urls:
 			print(url)'''
+	#if keyword is found
 	if(urls):
 		url = urls[-1]
+		#open the url containing the keyword in the browser
 		open_browser(url)
 	else:
 		key = str(key[0:1])
+		#search for similar results
 		urls = look(index,key)
 		'''if(urls):
 			for url in urls:
@@ -122,6 +143,7 @@ def search():
 		url = urls[-1]
 		open_browser(url)
 
+#global entry
 entry = 0
 
 def open_tkinter():
