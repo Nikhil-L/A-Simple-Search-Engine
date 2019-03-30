@@ -43,8 +43,9 @@ def crawl_web(seed_page):
 	crawled = []
 	next_depth = []
 	index = {}
+	graphs = {}
 	num = 0
-	while to_crawl and num <= 7:#make the loop crawl for the length of 7 pages
+	while to_crawl and num <= 5:#make the loop crawl for the length of 7 pages
 		page = to_crawl.pop()
 		num = num + 1
 		
@@ -59,9 +60,10 @@ def crawl_web(seed_page):
 			add_page_to_index(index, page, txt)
 			#scraps all the links for further crawling
 			links = get_all_links(soup)
+			graphs[page] = links
 			union(to_crawl, links)
 			crawled.append(page)
-	return crawled, index
+	return index, graphs
 	
 	
 def get_all_links(page):
@@ -112,10 +114,42 @@ def look(index, key):
 		if key == keyword[0:1]:
 			return index[keyword]
 
+def compute_ranks(graph):
+	d = 0.8
+	numloops = 10
+
+	ranks = {}
+	npages = len(graph)
+	for page in graph:
+		ranks[page] = 1.0/npages
+
+	for i in range(0, numloops):
+		newranks = {}
+		for page in graph:
+			newrank = (1-d)/npages
+			for node in graph:
+				if page in graph[node]:
+					newrank = newrank + d*(ranks[node]/len(graph[node]))
+
+			newranks[page] = newrank
+
+		ranks = newranks
+	return ranks
+
+
+def geturl(urls, ranks):
+	url = urls[0]
+	for link in urls:
+		if(ranks[link] > ranks[url]):
+			url = link
+	return url
+
+
+
 def search():
-	print("reached search")
 	#start crawling form the seed page
-	crawled, index = crawl_web('https://www.geeksforgeeks.org/')
+	index, graphs = crawl_web('https://www.geeksforgeeks.org/')
+	ranks = compute_ranks(graphs)
 	#for key in index:
 		#print(key)
 	#apply stemmer for keyword
@@ -125,22 +159,33 @@ def search():
 	key = stemmer.stem(key)
 	#search for keyword in the dictionary
 	urls = lookup(index, key)
+
 	'''if(urls):
-		for url in urls:
-			print(url)'''
+		for link in urls:
+			print(1)
+			print(link)
+			print(ranks[link])'''
 	#if keyword is found
 	if(urls):
-		url = urls[-1]
+		if(len(urls) > 1):
+			url = geturl(urls, ranks)
+		else:
+			url = urls[0]
 		#open the url containing the keyword in the browser
 		open_browser(url)
 	else:
 		key = str(key[0:1])
 		#search for similar results
 		urls = look(index,key)
+		if(len(urls) > 1):
+			url = geturl(urls,ranks)
+		else:
+			url = urls[0]
 		'''if(urls):
-			for url in urls:
-				print(url)'''
-		url = urls[-1]
+			for link in urls:
+				print(link)
+				print(ranks[link])'''
+		#url = urls[-1]
 		open_browser(url)
 
 #global entry
@@ -151,6 +196,7 @@ def open_tkinter():
 	label1 = Label(my_window, text = "Enter key word")
 	global entry
 	entry = Entry(my_window)
+	#entry = str(entry)
 	button1 = Button(my_window, text = "click here to continue",command=search)
 
 	label1.grid(row = 0, column = 0)
