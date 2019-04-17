@@ -147,11 +147,6 @@ def geturl(urls, ranks):
 
 
 def search():
-	#start crawling form the seed page
-	index, graphs = crawl_web('https://www.geeksforgeeks.org/')
-	ranks = compute_ranks(graphs)
-	#for key in index:
-		#print(key)
 	#apply stemmer for keyword
 	stemmer = SnowballStemmer("english")
 	key = entry.get()
@@ -192,6 +187,9 @@ def search():
 entry = 0
 
 def open_tkinter():
+	#start crawling form the seed page
+	index, graphs = crawl_web('https://www.geeksforgeeks.org/')
+	ranks = compute_ranks(graphs)
 	my_window = Tk()
 	label1 = Label(my_window, text = "Enter key word")
 	global entry
