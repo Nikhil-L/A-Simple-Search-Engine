@@ -1,5 +1,7 @@
 
 #import section
+import urllib.request 
+from urllib.error import HTTPError, URLError
 import webbrowser
 import requests
 from bs4 import BeautifulSoup
@@ -148,47 +150,59 @@ def geturl(urls, ranks):
 
 def search():
 	#apply stemmer for keyword
-	stemmer = SnowballStemmer("english")
 	key = entry.get()
-	key = key.lower()#convert it to lower
-	key = stemmer.stem(key)
-	#search for keyword in the dictionary
-	urls = lookup(index, key)
+	List = ['.com' , '.org' , '.net']
+	flag = False
+	for extension in List:
+		try:
+			url = 'https://www.' + key + extension	
+			request = urllib.request.Request(url)
+			opener = urllib.request.build_opener()
+			response = opener.open(request)
+			print(url)
+			open_browser(url)
+			flag = True
+			break
+		except URLError:
+			continue
 
-	'''if(urls):
-		for link in urls:
-			print(1)
-			print(link)
-			print(ranks[link])'''
-	#if keyword is found
-	if(urls):
-		if(len(urls) > 1):
-			url = geturl(urls, ranks)
-		else:
-			url = urls[0]
-		#open the url containing the keyword in the browser
-		open_browser(url)
-	else:
-		key = str(key[0:1])
-		#search for similar results
-		urls = look(index,key)
-		if(len(urls) > 1):
-			url = geturl(urls,ranks)
-		else:
-			url = urls[0]
+	if flag == False:
+		#search for keyword in the dictionary
+		urls = lookup(index, key)
 		'''if(urls):
 			for link in urls:
-				print(link)
+				print(1)
+				print(link)s
 				print(ranks[link])'''
-		#url = urls[-1]
-		open_browser(url)
+		#if keyword is found
+		if(urls):
+			if(len(urls) > 1):
+				url = geturl(urls, ranks)
+			else:
+				url = urls[0]
+			#open the url containing the keyword in the browser
+			open_browser(url)
+		else:
+			key = str(key[0:1])
+			#search for similar results
+			urls = look(index,key)
+			if(len(urls) > 1):
+				url = geturl(urls,ranks)
+			else:
+				url = urls[0]
+			'''if(urls):
+				for link in urls:
+					print(link)
+					print(ranks[link])'''
+			#url = urls[-1]
+			open_browser(url)
 
 #global entry
 entry = 0
 
 def open_tkinter():
 	#start crawling form the seed page
-	global index, graphs
+	global index, graphs, ranks
 	index, graphs = crawl_web('https://www.geeksforgeeks.org/')
 	ranks = compute_ranks(graphs)
 	my_window = Tk()
