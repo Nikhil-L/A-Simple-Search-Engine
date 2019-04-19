@@ -188,6 +188,7 @@ entry = 0
 
 def open_tkinter():
 	#start crawling form the seed page
+	global index, graphs
 	index, graphs = crawl_web('https://www.geeksforgeeks.org/')
 	ranks = compute_ranks(graphs)
 	my_window = Tk()
