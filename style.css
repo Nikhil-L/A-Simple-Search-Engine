@@ -1,0 +1,38 @@
+
+body{
+background-image:url(cool-background.png);
+}
+
+
+.search{
+	position: absolute;
+	  width: 300px;
+	  height: 200px;
+	  z-index: 15;
+	  top: 50%;
+	  left: 42%;
+	  margin: -100px 0 0 -150px;
+}
+
+input[type="text"]{
+	font-size: 120%;
+	color: #5a5854;
+	background-color:#f2f2f2;
+	border: 1px solid #bdbdbd ;
+	border-radius: 5px;
+	padding: 5px 5px 5px 30px;
+	background-repeat: no repeat;
+	background-position: 8px 9px;
+	margin-bottom: 20px;
+	width: 500px;
+	height: 40px;
+	}
+input[type="text"]:focus , input[type="text"]:hover {
+	background-color: #ffffff;
+	border: 1px solid #b1e1e4;
+	}
+
+
+
+
+	
