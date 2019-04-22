@@ -1,16 +1,17 @@
 
 #import section
+import urllib.request
+from urllib.error import HTTPError, URLError
 import webbrowser
 import requests
 from bs4 import BeautifulSoup
-from nltk.stem.snowball import SnowballStemmer
+#from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from tkinter import*
 
 
 def get_page(url):
-	
 	#get the page
 	response = requests.get(url)
 	#convert the page into text format
@@ -25,37 +26,38 @@ def clean(content):
 	stop_words = set(stopwords.words('english'))
 	stop_words.add("this")
 	#usage of SnowballStemmer to apply stemming for words in list
-	stemmer = SnowballStemmer("english")
+	#stemmer = SnowballStemmer("english")
 	i = 0
 	for word in content:
 		if(word not in stop_words):
 			#stemming the words
-			content[i] = stemmer.stem(word)
+			content[i] = word
 			i = i + 1
 		else:
 			# word is a stop words then delete that word
 			del content[i]
 	return content
-	
-def crawl_web(seed_page):
 
+def crawl_web(seed_page):
 	to_crawl = [seed_page]
 	crawled = []
 	next_depth = []
 	index = {}
 	graphs = {}
 	num = 0
-	while to_crawl and num <= 5:#make the loop crawl for the length of 7 pages
+	#make the loop crawl for the length of 7 pages
+	while to_crawl and num <= 10:
 		page = to_crawl.pop()
 		num = num + 1
-		
+
 		if page not in crawled:
 			#get the page
 			content = get_page(page)
 			#convert the page into parsable format
 			soup = BeautifulSoup(content, 'lxml')
 			#get text from the soup
-			txt = soup.get_text()
+			headers = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5'])
+			txt = str([header.get_text() for header in headers])
 			#adds the all the keywords in the page to the index
 			add_page_to_index(index, page, txt)
 			#scraps all the links for further crawling
@@ -64,10 +66,9 @@ def crawl_web(seed_page):
 			union(to_crawl, links)
 			crawled.append(page)
 	return index, graphs
-	
-	
+
+
 def get_all_links(page):
-	
 	links = []
 	#get all links having a herf
 	tags = page.find_all('a')
@@ -78,19 +79,19 @@ def get_all_links(page):
 			if url[0:4] == "http":
 				links.append(url)
 	return links
-	
+
 def union(links, page):
 	#append the unique link to to_be_crawled list
 	for link in page:
 		if link not in links:
 			links.append(link)
-			
+
 def add_page_to_index(index, url, content):
-	#converting the text to a list of words 
+	#converting the text to a list of words
 	content = clean(content)
 	for word in content:
 		add_to_index(index, word, url)
-        
+
 def add_to_index(index, keyword, url):
 	#unique keyword or url gets appended to index
     if keyword in index:
@@ -147,51 +148,61 @@ def geturl(urls, ranks):
 
 
 def search():
-	#start crawling form the seed page
-	index, graphs = crawl_web('https://www.geeksforgeeks.org/')
-	ranks = compute_ranks(graphs)
-	#for key in index:
-		#print(key)
-	#apply stemmer for keyword
-	stemmer = SnowballStemmer("english")
 	key = entry.get()
-	key = key.lower()#convert it to lower
-	key = stemmer.stem(key)
-	#search for keyword in the dictionary
-	urls = lookup(index, key)
+	List = ['.com/' , '.org/' , '.net/']
+	flag = False
+	for extension in List:
+		try:
+			url = 'https://' + key + extension
+			request = urllib.request.Request(url)
+			opener = urllib.request.build_opener()
+			response = opener.open(request)
+			open_browser(url)
+			flag = True
+			break
+		except URLError:
+			continue
+		except HTTPError:
+			continue
 
-	'''if(urls):
-		for link in urls:
-			print(1)
-			print(link)
-			print(ranks[link])'''
-	#if keyword is found
-	if(urls):
-		if(len(urls) > 1):
-			url = geturl(urls, ranks)
-		else:
-			url = urls[0]
-		#open the url containing the keyword in the browser
-		open_browser(url)
-	else:
-		key = str(key[0:1])
-		#search for similar results
-		urls = look(index,key)
-		if(len(urls) > 1):
-			url = geturl(urls,ranks)
-		else:
-			url = urls[0]
+	if flag == False:
+		index, graphs = crawl_web('https://www.dictionary.com/')
+		ranks = compute_ranks(graphs)
+		#search for keyword in the dictionary
+		urls = lookup(index, key)
 		'''if(urls):
 			for link in urls:
-				print(link)
+				print(1)
+				print(link)s
 				print(ranks[link])'''
-		#url = urls[-1]
-		open_browser(url)
+		#if keyword is found
+		if(urls):
+			if(len(urls) > 1):
+				url = geturl(urls, ranks)
+			else:
+				url = urls[0]
+			#open the url containing the keyword in the browser
+			open_browser(url)
+		else:
+			key = str(key[0:1])
+			#search for similar results
+			urls = look(index,key)
+			if(len(urls) > 1):
+				url = geturl(urls,ranks)
+			else:
+				url = urls[0]
+			'''if(urls):
+				for link in urls:
+					print(link)
+					print(ranks[link])'''
+			#url = urls[-1]
+			open_browser(url)
 
 #global entry
 entry = 0
 
 def open_tkinter():
+	#start crawling form the seed page
 	my_window = Tk()
 	label1 = Label(my_window, text = "Enter key word")
 	global entry
@@ -210,4 +221,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
