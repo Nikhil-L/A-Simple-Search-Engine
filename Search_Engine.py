@@ -105,7 +105,7 @@ def lookup(index, keyword):
     if keyword in index:
         return index[keyword]
     else:
-        return None
+        return None#if no keyword found
 
 def open_browser(url):
 	webbrowser.open(url)#opens the url in the webbrowser
