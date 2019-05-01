@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 #from nltk.stem.snowball import SnowballStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
-from tkinter import*
 
 
 def get_page(url):
@@ -148,7 +147,7 @@ def geturl(urls, ranks):
 
 
 def search():
-	key = entry.get()
+	key = input()
 	List = ['.com/' , '.org/' , '.net/']
 	flag = False
 	for extension in List:
@@ -198,26 +197,8 @@ def search():
 			#url = urls[-1]
 			open_browser(url)
 
-#global entry
-entry = 0
-
-def open_tkinter():
-	#start crawling form the seed page
-	my_window = Tk()
-	label1 = Label(my_window, text = "Enter key word")
-	global entry
-	entry = Entry(my_window)
-	#entry = str(entry)
-	button1 = Button(my_window, text = "click here to continue",command=search)
-
-	label1.grid(row = 0, column = 0)
-	entry.grid(row = 0, column = 1)
-	button1.grid(row = 1)
-
-	my_window.mainloop()
-
 def main():
-	open_tkinter()
+	search()
 
 if __name__ == '__main__':
     main()
