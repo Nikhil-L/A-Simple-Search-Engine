@@ -41,8 +41,6 @@ def crawl_web(seed_page):
 	to_crawl = [seed_page]
 	crawled = []
 	next_depth = []
-	index = {}
-	graphs = {}
 	num = 0
 	#make the loop crawl for the length of 7 pages
 	while to_crawl and num <= 10:
@@ -147,33 +145,27 @@ def geturl(urls, ranks):
 
 
 def search():
-	key = input()
+	key = input("Enter the keyword : ")
 	List = ['.com/' , '.org/' , '.net/']
 	flag = False
 	for extension in List:
 		try:
-			url = 'https://' + key + extension
-			request = urllib.request.Request(url)
-			opener = urllib.request.build_opener()
-			response = opener.open(request)
-			open_browser(url)
-			flag = True
+			url = 'http://' + key + extension
+			a = requests.get(url)
+			if( a.status_code == 200):
+				open_browser(url)
+				flag = True
 			break
 		except URLError:
 			continue
 		except HTTPError:
 			continue
+		except requests.ConnectionError:
+			continue
 
 	if flag == False:
-		index, graphs = crawl_web('https://www.dictionary.com/')
-		ranks = compute_ranks(graphs)
 		#search for keyword in the dictionary
 		urls = lookup(index, key)
-		'''if(urls):
-			for link in urls:
-				print(1)
-				print(link)s
-				print(ranks[link])'''
 		#if keyword is found
 		if(urls):
 			if(len(urls) > 1):
@@ -186,18 +178,20 @@ def search():
 			key = str(key[0:1])
 			#search for similar results
 			urls = look(index,key)
-			if(len(urls) > 1):
-				url = geturl(urls,ranks)
-			else:
-				url = urls[0]
-			'''if(urls):
-				for link in urls:
-					print(link)
-					print(ranks[link])'''
-			#url = urls[-1]
-			open_browser(url)
+			if(urls):
+				if(len(urls) > 1):
+					url = geturl(urls,ranks)
+				else:
+					url = urls[0]
+				#url = urls[-1]
+				open_browser(url)
+
+index = {}
+graphs = {}
 
 def main():
+	index, graphs = crawl_web('https://www.dictionary.com/')
+	ranks = compute_ranks(graphs)
 	search()
 
 if __name__ == '__main__':
